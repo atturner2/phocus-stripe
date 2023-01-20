@@ -6,11 +6,18 @@ import {React, useContext} from "react";
 
 
 export const AccountInfoScreen = () => {
-   <>
-   HIIIII
-   </>
-  
+  return (
+    <>
+    <Text>Here we should have account information.</Text>
+
+    </>
+  );
 };
+   
+   
+   
+  
+
 const styles = StyleSheet.create({
     buttonText: {
       color: 'white',
