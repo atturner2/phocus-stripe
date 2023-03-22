@@ -24,9 +24,6 @@ export const CreateUserScreen = ( {navigation} ) => {
     }
   };
   
-  
-  
-
   return (
     <>
     <Text>CREATE USER SCREEN</Text>

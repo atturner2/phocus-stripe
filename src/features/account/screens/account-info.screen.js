@@ -8,7 +8,8 @@ import {React, useContext} from "react";
 export const AccountInfoScreen = () => {
   return (
     <>
-    <Text>Here we should have account information.</Text>
+    <Text>Here we should have account information.  This is where we should handle stripe billing</Text>
+        <Button title="Go back" onPress={() => navigation.goBack()} />
 
     </>
   );
