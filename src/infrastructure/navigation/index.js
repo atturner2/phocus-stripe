@@ -14,6 +14,7 @@ export const Navigation = () => {
   //creating new user shouldnt be here, only isloading, Ijust need to figure out the navigation
   return (
     <NavigationContainer>
+
       {isAuthenticated ? <AppNavigator/>: <AccountNavigator />}
     </NavigationContainer>
   );

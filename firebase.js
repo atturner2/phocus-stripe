@@ -1,5 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFunctions } from 'firebase/functions';
+import { getFirestore} from "firebase/firestore";
+
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
@@ -14,10 +17,25 @@ const firebaseConfig = {
   measurementId: "G-S415MFZWLJ"
 };
 
+/*
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+} else {
+  firebase.app(); // if already initialized, use that one
+}
+
+export default firebase;
+*/
+
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
+
+export const auth = getAuth(app);
+export const functions = getFunctions(app, 'us-central1');
 
 
-const auth = getAuth(app)
+export const db = getFirestore(app);
 
-export { auth };
+
+

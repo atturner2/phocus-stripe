@@ -2,7 +2,7 @@ import {  Button, Text, StyleSheet} from 'react-native';
 import { AuthenticationContext } from "../../../services/authentication.context";
 import {React, useContext} from "react";
 import { AccountInfoNavigator } from '../../../infrastructure/navigation/account-info.navigator';
-import { SubscriptionScreen } from './subscription-screen';
+import { SubscriptionScreen } from '../../subscription/subscription-screen';
 export const AccountScreen = ( {navigation} ) => {
     const { handleLogout } = useContext(AuthenticationContext);
 

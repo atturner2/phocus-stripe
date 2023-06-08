@@ -14,7 +14,7 @@ export const AuthenticationContextProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [creatingNewUser, setCreatingNewUser] = useState(false);
- 
+
   const handleSignUp = (email, password) => {
     console.log("REGISTERING")
     //call the error checkers here with ALL of the user input info
@@ -24,7 +24,7 @@ export const AuthenticationContextProvider = ({ children }) => {
 
         setUser(userCredentials);
         console.log('Registered with:', user);
-        
+
       })
       .catch(error => alert(error.message));
   };
@@ -57,11 +57,11 @@ export const AuthenticationContextProvider = ({ children }) => {
         console.log("error switching to the create user screen");
         setCreatingNewUser(false);
         setIsLoading(false);
-        
+
         setError(error);
 
       });
-    
+
     };
 
  const handleLogin = (email, password) => {
@@ -73,7 +73,8 @@ export const AuthenticationContextProvider = ({ children }) => {
         setUser(u);
         setIsLoading(false);
         setIsAuthenticated(true);
-        console.log('Logged in with:', u);
+       // console.log('Logged in with:', u);
+          console.log("logged in successfully as: ", u.user.email);
       })
       .catch((error) => {
         console.log("we had an error: ", error);
@@ -96,7 +97,7 @@ export const AuthenticationContextProvider = ({ children }) => {
   }
   return (
     <AuthenticationContext.Provider
-      
+
       value={{
         user,
         isAuthenticated,
