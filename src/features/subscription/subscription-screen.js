@@ -79,9 +79,6 @@ export const SubscriptionScreen = ({navigation}) => {
             // docSnap.data() will be undefined in this case
             console.log("No such document!");
         }
-
-
-
     };
 
     /*
@@ -104,7 +101,9 @@ export const SubscriptionScreen = ({navigation}) => {
             });
     }; */
 
-    const [modalVisible, setModalVisible] = useState(false);
+    const [modal1Visible, setModal1Visible] = useState(false);
+    const [modal2Visible, setModal2Visible] = useState(false);
+
     const { createToken } = useStripe();
 
 
@@ -119,15 +118,29 @@ export const SubscriptionScreen = ({navigation}) => {
             Alert.alert("Success!");
 
             // Handle successful checkout here
-            setModalVisible(!modalVisible);
+            setModal1Visible(!modal1Visible);
         } else if (path === 'cancel') {
             Alert.alert("Failure!");
 
-            setModalVisible(!modalVisible);
+            setModal1Visible(!modal1Visible);
         }
     }
 
+    const cancelPhocusPremium = async () => {
+        const cancelPhocusPremium = httpsCallable(functions, "cancelPhocusPremium");
+        const uid = auth.currentUser.uid
 
+        const params = {
+            // Your parameters here
+            uid: uid,
+        };
+        try {
+            const subscriptionResponse = await cancelPhocusPremium(params);
+            console.log("Successfully cancelled the subscription ", subscriptionResponse);
+        } catch(error) {
+            console.log("Error calling Cancel Stripe Subscription", error.message);
+        }
+    }
     const testCloudFunction = async () => {
 
 
@@ -239,77 +252,7 @@ export const SubscriptionScreen = ({navigation}) => {
 
     }
 
-    const getStripeToken = async () => {
 
-
-        try {
-            initStripe({
-                publishableKey: 'pk_test_51LAxFUFeFoS9xrDyWQFVec7a8mwMMbleChpSxUjkSGdGf12dzjwCNYco79CM2ALo1UBtLFNXB6IcIkwstVXgHJbM00A8KqAafS',
-            });
-            const uid = auth.currentUser.uid
-            const token = await createToken({ type: 'Card' });
-            console.log("Should be a token out there: ", token);
-            setModalVisible(false); // close modal after payment
-            Alert.alert("Card added successfully");
-            const params = {
-                stripeToken: token,
-                uid: uid,
-            };
-            // http://127.0.0.1:5001/phocus-f7cec/us-central1/createStripeSubscription
-            //https://us-central1-phocus-f7cec.cloudfunctions.net/createStripeSubscription
-            console.log("Calling cloud function!!!");
-            fetch('http://127.0.0.1:5001/phocus-f7cec/us-central1/createStripeSubscription', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    // Handle the response from the Cloud Function
-                    console.log(data);
-                })
-                .catch((error) => {
-                    console.log("this is where the network request is failing");
-                    // Handle any errors
-                    console.error(error.message);
-                });
-           /*
-            const createSubscription = httpsCallable(functions, 'createStripeSubscription');
-            createSubscription({ params })
-                .then((result) => {
-                    console.log("cloud funtion.then");
-                    // Handle the result from the Cloud Function
-                    console.log(result.data);
-                })
-                .catch((error) => {
-                    console.log("something is erroring out in th cloud ")
-                    // Handle any errors
-                    console.error(error);
-                }); */
-            console.log("after cloud call!");
-
-
-            /*
-             if (typeof (token) === 'object' && typeof (token.token.id) === 'string' && token.token.id.length) {
-                 await this.postCard(token.token.id);
-                 return;
-             }
-
-             this.setState({ loading: false });
-             Alert.alert('Error', 'Unable to add card.', [{ text: 'OK', onPress: () => { } }]);
-             return;*/
-        } catch (e) {
-            Alert.alert(
-                'Error',
-                'Card is invalid.',
-            );
-        }
-        //down here we can call the backend cloudfunctions to sign the user up. After this we don't really need this any more
-
-
-    }
 
 
 
@@ -408,15 +351,15 @@ export const SubscriptionScreen = ({navigation}) => {
             <Button title="Go back" onPress={() => navigation.goBack()} />
             <Button title="Edit Subscription or Payment Information" onPress={editPaymentInformation}></Button>
             <Button title="Check Database" onPress={checkDatabase}/>
-            <Button title="Enter Card Information" onPress={() => setModalVisible(modalVisible)}/>
+            <Button title="Enter Card Information" onPress={() => setModal1Visible(modal1Visible)}/>
 
             <View style={{ marginTop: 22 }}>
                 <Modal
                     animationType="slide"
                     transparent={false}
-                    visible={modalVisible}
+                    visible={modal1Visible}
                     onRequestClose={() => {
-                        setModalVisible(!modalVisible);
+                        setModal1Visible(!modal1Visible);
                     }}
                 >
                     <View style={{marginTop: 22}}>
@@ -430,7 +373,26 @@ export const SubscriptionScreen = ({navigation}) => {
                             />
                             <Button onPress={testCloudFunction} title="Pay" />
                             <Button
-                                onPress={() => setModalVisible(!modalVisible)}
+                                onPress={() => setModal1Visible(!modal1Visible)}
+                                title="Close"
+                            />
+                        </View>
+                    </View>
+                </Modal>
+                <Modal
+                    animationType="slide"
+                    transparent={false}
+                    visible={modal2Visible}
+                    onRequestClose={() => {
+                        setModal2Visible(!modal2Visible);
+                    }}
+                >
+                    <View style={{marginTop: 22}}>
+                        <View>
+                            <Text>Are you sure you want to cancel your Phocus Premium Subscription?</Text>
+                            <Button onPress={cancelPhocusPremium} title="Cancel Phocus Premium" />
+                            <Button
+                                onPress={() => setModal2Visible(!modal2Visible)}
                                 title="Close"
                             />
                         </View>
@@ -438,25 +400,17 @@ export const SubscriptionScreen = ({navigation}) => {
                 </Modal>
 
                 <Button
-                    onPress={() => setModalVisible(true)}
+                    onPress={() => setModal1Visible(true)}
                     title="Sign up for Phocus Premium"
                 />
+                <Button
+                    onPress={() => setModal2Visible(true)}
+                    title="Cancel my Phocus Premium Subscription"
+                />
             </View>
-
-
         </>
     )
 };
-
-
-/*
-* <Button
-                    onPress={() => setModalVisible(true)}
-                    title="Sign up for Phocus Premium"
-                />
-*
-* */
-
 
 const styles = StyleSheet.create({
     cardField: {
@@ -491,18 +445,4 @@ const styles = StyleSheet.create({
 
 
 
-/*
-*<CardField
-                                placeholder={{
-                                    number: '4242 4242 4242 4242',
-                                }}
-                                onCardChange={(cardDetails) => {
-                                    console.log('cardDetails', cardDetails);
-                                }}
-                                onFocus={(focusedField) => {
-                                    console.log('focusField', focusedField);
-                                }}
-                                style={styles.cardField}
-                            />
-*
-* */
+

@@ -1,7 +1,8 @@
 import {  signOut } from "firebase/auth";
-import { auth } from "../../firebase.js"
+import {auth, db} from "../../firebase.js"
 import { loginRequest, createUserRequest, logOutOfPhocus } from "./authentication.service";
 import { Text, Alert } from "react-native";
+import { collection, doc, updateDoc } from "firebase/firestore";
 
 import React, { useState, createContext } from "react";
 
@@ -21,7 +22,7 @@ export const AuthenticationContextProvider = ({ children }) => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(userCredentials => {
         console.log('Registering user: ', user);
-
+        console.log("Here is auth: ", auth.currentUser.uid)
         setUser(userCredentials);
         console.log('Registered with:', user);
 
@@ -44,17 +45,19 @@ export const AuthenticationContextProvider = ({ children }) => {
     setCreatingNewUser(true);
     setIsLoading(true);
     createUserRequest(email, password)
-      .then(() => {
-        console.log("In the create user, UPDATINGcalling handleSignUp");
-        //handleSignUp(email, password)
-        console.log("In the create user, after HandleSIgnup");
-        setCreatingNewUser(false);
-        setIsLoading(false);
-        console.log("In the create user, after HandleSIgnup");
+      .then(async () => {
+          console.log("In the create user, UPDATINGcalling handleSignUp");
+          //handleSignUp(email, password)
+          console.log("In the create user, after HandleSIgnup");
+
+          console.log('Customer successfully created');
+          setCreatingNewUser(false);
+          setIsLoading(false);
+          console.log("In the create user, after HandleSIgnup");
 
       })
       .catch((error) => {
-        console.log("error switching to the create user screen");
+        console.log("error switching to the create user screen: ", error);
         setCreatingNewUser(false);
         setIsLoading(false);
 
