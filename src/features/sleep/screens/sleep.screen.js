@@ -67,8 +67,6 @@ export const SleepScreen = ({ navigation }) => {
         await newSound.playAsync();
         setSound(newSound);
       } else {
-        sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-
         await sound.playAsync();
       }
       setIsPlaying(true);
@@ -79,7 +77,6 @@ export const SleepScreen = ({ navigation }) => {
 
   const onPlaybackStatusUpdate = (playbackStatus) => {
     if (playbackStatus.didJustFinish) {
-      console.log("Incrementing loopcount")
       setLoopCount(prevCount => prevCount + 1);
     }
   };

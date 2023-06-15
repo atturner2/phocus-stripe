@@ -6,8 +6,6 @@ import {doc, getDoc} from "firebase/firestore";
 
 
 export const MeditateScreen = ({ navigation }) => {
-  const [freeUseLimit, setFreeUseLimit] = useState(false);
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [loopCount, setLoopCount] = useState(0);
   const [sound, setSound] = useState(null);
@@ -41,21 +39,21 @@ export const MeditateScreen = ({ navigation }) => {
   };
   const handlePlayAudio = async () => {
 
-      console.log("checkdatabase");
-      console.log("Here is the auth: ", auth.currentUser.uid);
-      const docRef = doc(db, 'customers', auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        console.log("Premium Subscription: ", docSnap.data().isActive);
-        if (docSnap.data().isActive == true) {
-          await handlePlayAudioPremium();
-        } else {
-          await handlePlayAudioNonPremium();
-        }
+    console.log("checkdatabase");
+    console.log("Here is the auth: ", auth.currentUser.uid);
+    const docRef = doc(db, 'customers', auth.currentUser.uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      console.log("Premium Subscription: ", docSnap.data().isActive);
+      if (docSnap.data().isActive == true) {
+        await handlePlayAudioPremium();
       } else {
-        // docSnap.data() will be undefined in this case
-        console.log("No such user to play audio, something is wrong");
+        await handlePlayAudioNonPremium();
       }
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such user to play audio, something is wrong");
+    }
 
   }
   const handlePlayAudioNonPremium = async () => {
@@ -108,16 +106,12 @@ export const MeditateScreen = ({ navigation }) => {
 
   return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        {loopCount < 5 ? (
-            !isPlaying ? (
-                <Button title="Start Audio" onPress={handlePlayAudio} />
-            ) : (
-                <Button title="Stop Audio" onPress={handleStopAudio} />
-            )
+        {!isPlaying ? (
+            <Button title="Start Audio" onPress={handlePlayAudio} />
         ) : (
-            <Text>Subscribe for unlimited play time</Text>
+            <Button title="Stop Audio" onPress={handleStopAudio} />
         )}
-        <Text>Loop Count: {loopCount}</Text>
+        <Text>Play Count: {loopCount}</Text>
       </View>
   );
 };
