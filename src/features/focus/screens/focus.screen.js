@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { StatusBar, StyleSheet, Button, SafeAreaView, Text, View } from "react-native";
+import {StatusBar, StyleSheet, Button, SafeAreaView, Text, View, Alert} from "react-native";
 import { Audio } from 'expo-av';
 import {auth, db} from "../../../../firebase";
 import {doc, getDoc} from "firebase/firestore";
@@ -36,6 +36,36 @@ export const FocusScreen = ({ navigation }) => {
     }
     return true;
   };
+
+  useEffect(() => {
+    // Load the sound file
+    const mySound = new Sound('path_to_your_audio_file.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('Failed to load the sound', error);
+        return;
+      }
+      setSound(mySound);
+    });
+
+    // Make sure to release the sound resource when the component unmounts
+    return () => {
+      mySound.release();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    if (loopCount >= 5) {
+      stopSound();
+      Alert.alert(
+          'Alert',
+          'The audio file has looped 5 times.',
+          [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+          { cancelable: false }
+      );
+    }
+  }, [loopCount]);
+
   const handlePlayAudio = async () => {
 
     console.log("checkdatabase");
@@ -47,6 +77,7 @@ export const FocusScreen = ({ navigation }) => {
       if (docSnap.data().isActive == true) {
         await handlePlayAudioPremium();
       } else {
+        console.log("Calling audio NON premium");
         await handlePlayAudioNonPremium();
       }
     } else {
@@ -56,28 +87,28 @@ export const FocusScreen = ({ navigation }) => {
 
   }
   const handlePlayAudioNonPremium = async () => {
-    try {
-      if (!sound) {
-        const { sound: newSound } = await Audio.Sound.createAsync(
-            require('./../../../../assets/Phocus.m4a'),
-            { isLooping: true }
-        );
-        newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-        await newSound.playAsync();
-        setSound(newSound);
+    if (!sound) return;
+
+    sound.setNumberOfLoops(-1); // Infinite loop
+    sound.play((success) => {
+      if (success) {
+        setLoopCount(loopCount + 1);
       } else {
-        await sound.playAsync();
+        console.log('Playback failed');
       }
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('Error playing sound:', error);
-    }
+    });
+    setIsPlaying(true);
   };
 
   const onPlaybackStatusUpdate = (playbackStatus) => {
-    if (playbackStatus.didJustFinish) {
-      setLoopCount(prevCount => prevCount + 1);
-    }
+      console.log("Beginning of call loopcount: ", loopCount);
+      if (playbackStatus.didJustFinish) {
+        setLoopCount(loopCount + 1);
+        console.log("inside of if LoopCount: ", loopCount);
+
+      }
+      console.log("outside of if loopCount: ", loopCount);
+
   };
 
   const handlePlayAudioPremium = async () => {
