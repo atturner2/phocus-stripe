@@ -23,31 +23,59 @@ const url = require('url');
 
 admin.initializeApp();
 
+exports.addIsActiveField = functions.firestore
+    .document('customers/{uid}')
+    .onCreate((snap, context) => {
+      // Add isActive field and set to false
+      return snap.ref.set({
+        isActive: false
+      }, { merge: true }); // Using merge: true to avoid overwriting existing data
+    });
+
+exports.cancelPhocusPremium = functions.https.onCall(async (data, context) => {
+  console.log("Here is the data we get here, should be enough to cancel the subscription. ", data);
+  const uid = data.uid;
+ try {
+
+   const userRecordRef = await admin.firestore().collection('customers').doc(uid);
+   const userRecord = await userRecordRef.get();
+   if (!userRecord.exists || !userRecord.data().isActive) {
+     return "User does not have an active stripe subscription to cancel";
+   }
+   // Retrieve Stripe subscription ID
+   const stripeSubscriptionId = userRecord.get("subscriptionId");
+   console.log("Here is the userRecord: ", userRecord);
+   console.log("")
+
+   await stripeClient.subscriptions.del(stripeSubscriptionId);
+
+   await userRecordRef.update({
+     isActive: false
+   })
+
+ } catch (error) {
+   console.error("Error cancelling Subscription: ", error);
+   return "Error cancelling Subscription";
+ }
+});
 // const admin = require('firebase-admin');
 exports.createFirstStripeSubscription = functions.https.onCall(async (data, context) => {
-  console.log("Test call server side");
 
   const uid = data.uid;
 
-  console.log("here is the uid: ", uid);
-  console.log("Here is the token: ", data.token);
   const userRecord = await admin.firestore().collection('customers').doc(uid).get();
   const tokenInfo = await stripeClient.tokens.retrieve(data.token.id);
-  console.log("Here is token info: ", tokenInfo);
-
+  const isAlreadySubscribed = userRecord.get("isActive");
   const stripeId = userRecord.get("stripeId");
-  console.log("Here is the stripe id:", stripeId);
 
   // Do something with token and uid...
-  console.log("here is the token: ", data.token)
-  console.log("Here is that id token object from earlier: ", data.token.id)
-  console.log("Here is the token card object: ", data.token.card);
   //first create the Stripe payment method
   const paymentMethod = await stripeClient.paymentMethods.create({
     type: 'card',
     card: { token: data.token.id },
   });
   console.log("Successfully got the payment method:");
+  console.log("Here is the stripe id: ", stripeId);
   //now attach the stripe payment method to that user, ahrdcoded for now
   await stripeClient.paymentMethods.attach(paymentMethod.id, {
     customer: stripeId,
@@ -69,35 +97,18 @@ exports.createFirstStripeSubscription = functions.https.onCall(async (data, cont
   });
   console.log("successfully made the subscription.");
 
-
-
-  await admin.firestore().collection('subscriptions').doc(uid).set({
+  await admin.firestore().collection('customers').doc(uid).update({
     customerId: uid,
     subscriptionId: subscription.id,
     planId: 'price_1N2M67FeFoS9xrDytg6E1v7d',
+    isActive: true,
     // Add any additional subscription details you want to store
   });
-/*
-  const subscription = await stripeClient.subscriptions.create({
-    customer: stripeId,
-    items: [{ plan: 'price_1N2M67FeFoS9xrDytg6E1v7d' }],
-    source: token,
-    // Add any additional subscription options if required
-  }); */
 
   return "Test call!";
 });
 
-/*
-  const urlParts = url.parse(request.url, true);
-  const query = urlParts.query;
 
-  // Extract the token and uid
-  const token = query.token;
-  const uid = query.uid;
-  console.log("here is the uid form the request:", request.url);
-  console.log("here is the uid: ,", uid);
-  */
 
 exports.testCallCallable = functions.https.onCall(async (data, context) => {
   const token = data.token.id;

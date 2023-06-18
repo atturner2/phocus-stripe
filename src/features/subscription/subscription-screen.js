@@ -8,12 +8,7 @@ import * as Linking from 'expo-linking'; // If you are using expo
 import React, {useEffect, useState} from 'react';
 import { doc, setDoc, addDoc, collection, onSnapshot} from "firebase/firestore";
 import {useStripe,  initStripe, CardForm} from '@stripe/stripe-react-native';
-
-
-
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
-
-
 
 const apiKey = 'pk_test_51LAxFUFeFoS9xrDyWQFVec7a8mwMMbleChpSxUjkSGdGf12dzjwCNYco79CM2ALo1UBtLFNXB6IcIkwstVXgHJbM00A8KqAafS';  // Your Stripe publishable key
 const client = new stripe(apiKey);
@@ -68,43 +63,10 @@ export const SubscriptionScreen = ({navigation}) => {
 
 
 
-    const checkDatabase = async () => {
-        console.log("checkdatabase");
-        console.log("Here is the auth: ", auth.currentUser.uid);
-        const docRef = doc(db, 'customers', auth.currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            console.log("Document data:", docSnap.data());
-        } else {
-            // docSnap.data() will be undefined in this case
-            console.log("No such document!");
-        }
 
+    const [modal1Visible, setModal1Visible] = useState(false);
+    const [modal2Visible, setModal2Visible] = useState(false);
 
-
-    };
-
-    /*
-    async function createSubscription(priceId, successUrl, cancelUrl) {
-        const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
-        //createCheckoutSession({ priceId: priceId, successUrl: successUrl, cancelUrl: cancelUrl })
-
-        createCheckoutSession({ priceId: priceId, })
-            .then((result) => {
-                // The checkout session has been created and we have the session ID.
-                const sessionId = result.data.sessionId;
-                const url = result.data.url;
-                console.log("Session ID: ", sessionId);
-                console.log("URL: ", url);
-
-                // TODO: Redirect user to the checkout session.
-            })
-            .catch((error) => {
-                console.log("Error: ", error);
-            });
-    }; */
-
-    const [modalVisible, setModalVisible] = useState(false);
     const { createToken } = useStripe();
 
 
@@ -119,16 +81,30 @@ export const SubscriptionScreen = ({navigation}) => {
             Alert.alert("Success!");
 
             // Handle successful checkout here
-            setModalVisible(!modalVisible);
+            setModal1Visible(!modal1Visible);
         } else if (path === 'cancel') {
             Alert.alert("Failure!");
 
-            setModalVisible(!modalVisible);
+            setModal1Visible(!modal1Visible);
         }
     }
 
+    const cancelPhocusPremium = async () => {
+        const cancelPhocusPremium = httpsCallable(functions, "cancelPhocusPremium");
+        const uid = auth.currentUser.uid
 
-    const testCloudFunction = async () => {
+        const params = {
+            // Your parameters here
+            uid: uid,
+        };
+        try {
+            const subscriptionResponse = await cancelPhocusPremium(params);
+            console.log("Successfully cancelled the subscription ", subscriptionResponse);
+        } catch(error) {
+            console.log("Error calling Cancel Stripe Subscription", error.message);
+        }
+    }
+    const firstPhocusSubscription = async () => {
 
 
         const cardNumber = '4242424242424242';  // these are test details
@@ -169,7 +145,6 @@ export const SubscriptionScreen = ({navigation}) => {
             } else {
                 console.error("ERROR IN THE INPUT TOKEN: ", inputToken.error);
             }
-            //console.log("Here is the input token: ", inputToken);
             const params = {
                 // Your parameters here
                 token: inputToken.token,
@@ -186,130 +161,9 @@ export const SubscriptionScreen = ({navigation}) => {
         } catch(error) {
             console.log("there was an error creating the stripe token: ", error);
         }
-
-      /*
-        fetch(url, {
-            method: 'POST', // or 'GET', 'PUT', etc.
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(parameters),
-        })
-            .then((response) => response.json())
-            .then((responseJson) => {
-                console.log(responseJson);
-                // Handle the response here
-            })
-            .catch((error) => {
-                console.log("still throws an error");
-                console.error(error);
-                // Handle the error here
-            }); */
-
-
-/*
-
-        const params = {
-            stripeToken: token,
-            uid: uid,
-        };
-        console.log("Here is functions: ", Object.keys(functions));
-        const testCall = httpsCallable(functions, 'testCall');
-        try {
-            const test = await testCall({params});
-            console.log("Test: ", test);
-        } catch(error) {
-            console.log("Error", error.message);
-        }
-        const createCheckoutSession = httpsCallable(functions, 'createStripeSubscription');
-
-
-        createCheckoutSession({params}).then((result) => {
-            console.log("the error isnt in thelinking or isnt in here")
-            // Use the checkout session url from the result to redirect the user
-            // Linking.openURL(result.data.url);
-        }).catch((error) => {
-            // Handle any errors
-            console.log("function call throws error");
-            console.error(error);
-        });
-        */
-
-
     }
 
-    const getStripeToken = async () => {
 
-
-        try {
-            initStripe({
-                publishableKey: 'pk_test_51LAxFUFeFoS9xrDyWQFVec7a8mwMMbleChpSxUjkSGdGf12dzjwCNYco79CM2ALo1UBtLFNXB6IcIkwstVXgHJbM00A8KqAafS',
-            });
-            const uid = auth.currentUser.uid
-            const token = await createToken({ type: 'Card' });
-            console.log("Should be a token out there: ", token);
-            setModalVisible(false); // close modal after payment
-            Alert.alert("Card added successfully");
-            const params = {
-                stripeToken: token,
-                uid: uid,
-            };
-            // http://127.0.0.1:5001/phocus-f7cec/us-central1/createStripeSubscription
-            //https://us-central1-phocus-f7cec.cloudfunctions.net/createStripeSubscription
-            console.log("Calling cloud function!!!");
-            fetch('http://127.0.0.1:5001/phocus-f7cec/us-central1/createStripeSubscription', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    // Handle the response from the Cloud Function
-                    console.log(data);
-                })
-                .catch((error) => {
-                    console.log("this is where the network request is failing");
-                    // Handle any errors
-                    console.error(error.message);
-                });
-           /*
-            const createSubscription = httpsCallable(functions, 'createStripeSubscription');
-            createSubscription({ params })
-                .then((result) => {
-                    console.log("cloud funtion.then");
-                    // Handle the result from the Cloud Function
-                    console.log(result.data);
-                })
-                .catch((error) => {
-                    console.log("something is erroring out in th cloud ")
-                    // Handle any errors
-                    console.error(error);
-                }); */
-            console.log("after cloud call!");
-
-
-            /*
-             if (typeof (token) === 'object' && typeof (token.token.id) === 'string' && token.token.id.length) {
-                 await this.postCard(token.token.id);
-                 return;
-             }
-
-             this.setState({ loading: false });
-             Alert.alert('Error', 'Unable to add card.', [{ text: 'OK', onPress: () => { } }]);
-             return;*/
-        } catch (e) {
-            Alert.alert(
-                'Error',
-                'Card is invalid.',
-            );
-        }
-        //down here we can call the backend cloudfunctions to sign the user up. After this we don't really need this any more
-
-
-    }
 
 
 
@@ -319,16 +173,7 @@ export const SubscriptionScreen = ({navigation}) => {
         const uid = auth.currentUser.uid; // current user's uid
         const priceId = "price_1N2M67FeFoS9xrDytg6E1v7d";
             // Add a new document to the 'checkout_sessions' collection
-           // const checkoutSessionsCollection = collection(db, `customers/${uid}/checkout_sessions`);
         try {
-            /*
-            const docRef = await addDoc(collection(db,'customers',uid,'checkout_sessions'), {
-                    price: priceId,  // your actual price ID
-                    success_url: successUrl, // You need to set this url
-                    cancel_url: cancelUrl, // You need to set this url
-                    mode: 'subscription',
-                }); */
-
             const docRef = collection(db, 'customers',uid,'checkout_sessions');
             const payload = {
                 price: priceId,  // your actual price ID
@@ -338,10 +183,7 @@ export const SubscriptionScreen = ({navigation}) => {
             }
 
             const newDoc = await addDoc(docRef, payload);
-            //console.log("Here is the doc", newDoc);
-          //  console.log("Here is the docRef: ", docRef(""));
             console.log("must be something with snap");
-// Wait for the CheckoutSession to get attached by the extension
 
             docRef.onSnapshot((snap) => {
                 const { error, url } = snap.data("checkout_sessions");
@@ -355,50 +197,10 @@ export const SubscriptionScreen = ({navigation}) => {
                     window.location.assign(url);
                 }
             });
-            /*
-            const docRef = await addDoc(checkoutSessionsCollection, {
-                price: priceId,
-                success_url: successUrl, // You need to set this url
-                cancel_url: cancelUrl, // You need to set this url
-                mode: 'subscription',
-                quantity: 1,
-            });
-
-            console.log("Checkout session created with ID: ", docRef);
-            docRef.onSnapshot((snap) => {
-                const { error, url } = snap.data();
-                if (error) {
-                    // Show an error to your customer and
-                    // inspect your Cloud Function logs in the Firebase console.
-                    alert(`An error occured: ${error.message}`);
-                }
-                if (url) {
-                    // We have a Stripe Checkout URL, let's redirect.
-                    window.location.assign(url);
-                }
-            }); */
         } catch (error) {
             console.log("There error is down here");
             console.error("Error creating checkout session: ", error.message);
         }
-
-
-
-
-
-// Wait for the CheckoutSession to get attached by the extension
-
-
-        /*
-        const checkoutSessionRef = doc(db, 'customers', uid, 'checkout_sessions');
-        try {
-            await setDoc(checkoutSessionRef, {
-                price: 'price_1N7pGQFeFoS9xrDyYMTbAkkH' // your price id
-
-            });
-        } catch (e) {
-            console.log("Error adding document: ", e);
-        } */
     }
 
 
@@ -406,17 +208,14 @@ export const SubscriptionScreen = ({navigation}) => {
         <>
             <Text>This is the subscriptionscreen </Text>
             <Button title="Go back" onPress={() => navigation.goBack()} />
-            <Button title="Edit Subscription or Payment Information" onPress={editPaymentInformation}></Button>
-            <Button title="Check Database" onPress={checkDatabase}/>
-            <Button title="Enter Card Information" onPress={() => setModalVisible(modalVisible)}/>
-
+            <Button title="Edit Existing Payment Information" onPress={editPaymentInformation}></Button>
             <View style={{ marginTop: 22 }}>
                 <Modal
                     animationType="slide"
                     transparent={false}
-                    visible={modalVisible}
+                    visible={modal1Visible}
                     onRequestClose={() => {
-                        setModalVisible(!modalVisible);
+                        setModal1Visible(!modal1Visible);
                     }}
                 >
                     <View style={{marginTop: 22}}>
@@ -428,9 +227,28 @@ export const SubscriptionScreen = ({navigation}) => {
                                 value={cardHolderName}
                                 onChangeText={text => setCardHolderName(text)}
                             />
-                            <Button onPress={testCloudFunction} title="Pay" />
+                            <Button onPress={firstPhocusSubscription} title="Pay" />
                             <Button
-                                onPress={() => setModalVisible(!modalVisible)}
+                                onPress={() => setModal1Visible(!modal1Visible)}
+                                title="Close"
+                            />
+                        </View>
+                    </View>
+                </Modal>
+                <Modal
+                    animationType="slide"
+                    transparent={false}
+                    visible={modal2Visible}
+                    onRequestClose={() => {
+                        setModal2Visible(!modal2Visible);
+                    }}
+                >
+                    <View style={{marginTop: 22}}>
+                        <View>
+                            <Text>Are you sure you want to cancel your Phocus Premium Subscription?</Text>
+                            <Button onPress={cancelPhocusPremium} title="Cancel Phocus Premium" />
+                            <Button
+                                onPress={() => setModal2Visible(!modal2Visible)}
                                 title="Close"
                             />
                         </View>
@@ -438,25 +256,17 @@ export const SubscriptionScreen = ({navigation}) => {
                 </Modal>
 
                 <Button
-                    onPress={() => setModalVisible(true)}
+                    onPress={() => setModal1Visible(true)}
                     title="Sign up for Phocus Premium"
                 />
+                <Button
+                    onPress={() => setModal2Visible(true)}
+                    title="Cancel my Phocus Premium Subscription"
+                />
             </View>
-
-
         </>
     )
 };
-
-
-/*
-* <Button
-                    onPress={() => setModalVisible(true)}
-                    title="Sign up for Phocus Premium"
-                />
-*
-* */
-
 
 const styles = StyleSheet.create({
     cardField: {
@@ -491,18 +301,4 @@ const styles = StyleSheet.create({
 
 
 
-/*
-*<CardField
-                                placeholder={{
-                                    number: '4242 4242 4242 4242',
-                                }}
-                                onCardChange={(cardDetails) => {
-                                    console.log('cardDetails', cardDetails);
-                                }}
-                                onFocus={(focusedField) => {
-                                    console.log('focusField', focusedField);
-                                }}
-                                style={styles.cardField}
-                            />
-*
-* */
+
