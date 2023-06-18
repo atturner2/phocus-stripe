@@ -33,8 +33,8 @@ export const FocusScreen = ({ navigation }) => {
     console.log(loopCount); // This will log the updated value of playCount whenever it changes
     if (loopCount > 5) {
       Alert.alert(
-          'Alert',
-          'The audio file has looped 5 times.',
+          'Free Use Limit Reached',
+          'You have used up your free usage. Subscribe to Premium for unlimited use!',
           [{text: 'OK', onPress: () => console.log('OK Pressed')}],
           {cancelable: false}
       );
