@@ -65,11 +65,10 @@ exports.createFirstStripeSubscription = functions.https.onCall(async (data, cont
 
   const userRecord = await admin.firestore().collection('customers').doc(uid).get();
   const tokenInfo = await stripeClient.tokens.retrieve(data.token.id);
-
+  const isAlreadySubscribed = userRecord.get("isActive");
   const stripeId = userRecord.get("stripeId");
 
   // Do something with token and uid...
-
   //first create the Stripe payment method
   const paymentMethod = await stripeClient.paymentMethods.create({
     type: 'card',
@@ -98,8 +97,6 @@ exports.createFirstStripeSubscription = functions.https.onCall(async (data, cont
   });
   console.log("successfully made the subscription.");
 
-
-
   await admin.firestore().collection('customers').doc(uid).update({
     customerId: uid,
     subscriptionId: subscription.id,
@@ -111,16 +108,7 @@ exports.createFirstStripeSubscription = functions.https.onCall(async (data, cont
   return "Test call!";
 });
 
-/*
-  const urlParts = url.parse(request.url, true);
-  const query = urlParts.query;
 
-  // Extract the token and uid
-  const token = query.token;
-  const uid = query.uid;
-  console.log("here is the uid form the request:", request.url);
-  console.log("here is the uid: ,", uid);
-  */
 
 exports.testCallCallable = functions.https.onCall(async (data, context) => {
   const token = data.token.id;
