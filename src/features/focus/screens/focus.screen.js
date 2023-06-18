@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { StatusBar, StyleSheet, Button, SafeAreaView, Text, View } from "react-native";
+import { StatusBar, StyleSheet, Button, SafeAreaView, Text, View, Alert } from "react-native";
 import { Audio } from 'expo-av';
 import {auth, db} from "../../../../firebase";
 import {doc, getDoc} from "firebase/firestore";
@@ -8,6 +8,7 @@ export const FocusScreen = ({ navigation }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [loopCount, setLoopCount] = useState(0);
   const [sound, setSound] = useState(null);
+  const [freeUseLimit, setFreeUseLimit] = useState(false);
   useEffect(() => {
     const setupAudioMode = async () => {
       try {
@@ -27,6 +28,20 @@ export const FocusScreen = ({ navigation }) => {
     setupAudioMode();
   }, []);
 
+  useEffect( () => {
+
+    console.log(loopCount); // This will log the updated value of playCount whenever it changes
+    if (loopCount > 5) {
+      Alert.alert(
+          'Alert',
+          'The audio file has looped 5 times.',
+          [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+          {cancelable: false}
+      );
+      setFreeUseLimit(true);
+      handleStopAudio();
+    }
+  }, [loopCount]);
 
 
   const getPermissions = async () => {
@@ -47,7 +62,17 @@ export const FocusScreen = ({ navigation }) => {
       if (docSnap.data().isActive == true) {
         await handlePlayAudioPremium();
       } else {
-        await handlePlayAudioNonPremium();
+        if (!freeUseLimit)
+        {
+          await handlePlayAudioNonPremium();
+        } else {
+          Alert.alert(
+              'Free Use Limit Reached',
+              'You have used up your free usage. Subscribe to Premium for unlimited use!',
+              [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+              {cancelable: false}
+          );
+        }
       }
     } else {
       // docSnap.data() will be undefined in this case
