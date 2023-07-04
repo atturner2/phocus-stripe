@@ -2,14 +2,14 @@ import { KeyboardAvoidingView, StyleSheet, TextInput, Button, Text, View } from 
 import React, { useState, useContext } from 'react';
 import { AuthenticationContext } from "../../../services/authentication.context";
 import { AuthButton } from "../component/login.component"
+import {LoadingComponent} from "../../Loading/loading-component";
 
 export const LoginScreen = ( {navigation} ) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  
   const {  handleLogin, error, isLoading } = useContext(AuthenticationContext);
 
- 
+
 
   return (
     <>
@@ -47,14 +47,14 @@ export const LoginScreen = ( {navigation} ) => {
         onPress={() => navigation.navigate("CreateUser")}
         style={styles.button}
       >
-        
+
         <Text style={styles.buttonText}>Login</Text>
       </Button>
       </>
         ): (
-          <Text>no button</Text>
+            <LoadingComponent></LoadingComponent>
         ) }
-        
+
       </View>
     </KeyboardAvoidingView>
     </>

@@ -13,15 +13,17 @@
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 const functions = require("firebase-functions");
-const stripeClient = require("stripe")(functions.config().stripe.secret);
+const Stripe = require("stripe");
+//const failedPaymentSecret = require(functions.config().failedsubscriptionpayment.secret);
 const cors = require("cors")({origin: true});
 const admin = require('firebase-admin');
 const {user} = require("firebase-functions/v1/auth");
 const url = require('url');
 
 
-
 admin.initializeApp();
+
+
 
 exports.addIsActiveField = functions.firestore
     .document('customers/{uid}')
@@ -32,9 +34,48 @@ exports.addIsActiveField = functions.firestore
       }, { merge: true }); // Using merge: true to avoid overwriting existing data
     });
 
+exports.handleFailedPaymentTest = functions.https.onRequest((req, res) => {
+console.log("here is the failed paymenttester");
+});
+
+exports.handleFailedPayment = functions.https.onRequest((req, res) => {
+  const stripeSecretKey = functions.config().stripe;
+  const stripeClient = new Stripe(stripeSecretKey);
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+  const secretValue = functions.config().failedsubscriptionpayment;
+  //console.log("Hereis the request: ", req);
+ // console.log("Here is the request.data: ", req.data);
+  try {
+    event = stripeClient.webhooks.constructEvent(req.body.toString('utf-8'), sig, secretValue.secret);
+    //console.log("Here is the event: ", event);
+
+  } catch (err) {
+    console.log("error grabbing the event: ", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object;
+
+    // Handle the failed payment (e.g. notify the user, update database, etc.)
+    console.log("Payment failed for invoice");
+
+    // ... Your custom logic here ...
+
+    // Return a response to acknowledge receipt of the event
+    res.json({ received: true });
+  } else {
+    res.status(400).end();
+  }
+});
+
 exports.cancelPhocusPremium = functions.https.onCall(async (data, context) => {
   console.log("Here is the data we get here, should be enough to cancel the subscription. ", data);
   const uid = data.uid;
+  const stripeSecretKey = functions.config().stripe;
+  const stripeClient = new Stripe(stripeSecretKey);
  try {
 
    const userRecordRef = await admin.firestore().collection('customers').doc(uid);
@@ -58,10 +99,35 @@ exports.cancelPhocusPremium = functions.https.onCall(async (data, context) => {
    return "Error cancelling Subscription";
  }
 });
+
+exports.reactivateExistingSubscription = functions.https.onCall(async (data, context) => {
+  const uid = data.uid;
+  const userRecord = await admin.firestore().collection('customers').doc(uid).get();
+  const stripeId = userRecord.get("stripeId");
+  const stripeSecretKey = functions.config().stripe;
+  const stripeClient = new Stripe(stripeSecretKey);
+  const subscription = await stripeClient.subscriptions.create({
+    customer: stripeId,
+    items: [{ price: "price_1N2M67FeFoS9xrDytg6E1v7d" }],
+    expand: ['latest_invoice.payment_intent'],
+  });
+
+  await admin.firestore().collection('customers').doc(uid).update({
+    customerId: uid,
+    subscriptionId: subscription.id,
+    planId: 'price_1N2M67FeFoS9xrDytg6E1v7d',
+    isActive: true,
+    // Add any additional subscription details you want to store
+  });
+});
+
 // const admin = require('firebase-admin');
 exports.createFirstStripeSubscription = functions.https.onCall(async (data, context) => {
 
   const uid = data.uid;
+  const stripeSecretKey = functions.config().stripe;
+  const stripeClient = new Stripe(stripeSecretKey);
+  console.log("stripeclient, ", stripeClient);
 
   const userRecord = await admin.firestore().collection('customers').doc(uid).get();
   const tokenInfo = await stripeClient.tokens.retrieve(data.token.id);
@@ -105,58 +171,5 @@ exports.createFirstStripeSubscription = functions.https.onCall(async (data, cont
     // Add any additional subscription details you want to store
   });
 
-  return "Test call!";
-});
-
-
-
-exports.testCallCallable = functions.https.onCall(async (data, context) => {
-  const token = data.token.id;
-  const uid = data.uid;
-  console.log("here is the uid: ", uid);
-  console.log("Here is the token string we're sending: ", token);
-  const userRecord = await admin.firestore().collection('customers').doc(uid).get();
-  //console.log("Here is the user!", userRecord);
-  const stripeId = userRecord.get("stripeId");
-  //console.log("here is the uid form the token:", request.token);
-  console.log("Here is the stripeId which we don't currently use: ", stripeId);
-
-  // Do something with token and uid...
-
-  //first create the Stripe payment method
-  const paymentMethod = await stripeClient.paymentMethods.create({
-    type: 'card',
-    card: { token: token },
-  });
-  console.log("Successfully created a payment method")
-  //now attach the stripe payment method to that user, ahrdcoded for now
-  await stripeClient.paymentMethods.attach(paymentMethod.id, {
-    customer: stripeId,
-  });
-  console.log("successfully attached the stripe payment method to the customer");
-  //make that payment the default for the customer
-  await stripeClient.customers.update(stripeId, {
-    invoice_settings: {
-      default_payment_method: paymentMethod.id,
-    },
-  });
-  // Create a premium subscription for the customer
-  console.log("successfully updated the deafult payment method for the customer");
-
-  const subscription = await stripeClient.subscriptions.create({
-    customer: stripeId,
-    items: [{ price: "price_1N2M67FeFoS9xrDytg6E1v7d" }],
-    expand: ['latest_invoice.payment_intent'],
-  });
-
-
-
-  await admin.firestore().collection('subscriptions').doc(uid).set({
-    customerId: uid,
-    subscriptionId: subscription.id,
-    planId: 'price_1N2M67FeFoS9xrDytg6E1v7d',
-    // Add any additional subscription details you want to store
-  });
-
-  return "Test call!";
+  return "Successfully created the Stripe subscription with the entered payment method.";
 });
