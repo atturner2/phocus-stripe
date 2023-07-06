@@ -15,7 +15,8 @@ import { LoadingComponent } from "../Loading/loading-component";
 const apiKey = 'pk_test_51LAxFUFeFoS9xrDyWQFVec7a8mwMMbleChpSxUjkSGdGf12dzjwCNYco79CM2ALo1UBtLFNXB6IcIkwstVXgHJbM00A8KqAafS';  // Your Stripe publishable key
 const client = new stripe(apiKey);
 export const SubscriptionScreen = ({navigation}) => {
-    const [isActive, setIsActive] = useState(false);
+    const [isActive, setIsActive] = useState(true);
+    const [isPaymentFailed, setIsPaymentFailed] = useState(false)
     const [isLoading, setIsLoading] = useState(false);
     const [cardHolderName, setCardHolderName] = useState('');
     // This is to hold the cardholder's name
@@ -44,7 +45,7 @@ export const SubscriptionScreen = ({navigation}) => {
                     setFirstTimeCustomer(true);
                     console.log("brand new user, no customer ID");
                 }
-                if(docSnap.data().isActive === true) {
+                if(docSnap.data().isActive === "Active") {
                     setIsActive(true);
                     console.log("User has a current subscription");
                 } else {
