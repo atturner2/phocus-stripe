@@ -68,16 +68,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'black',
   },
   inputContainer: {
-    width: '80%'
+    width: '80%',
   },
   input: {
-    backgroundColor: 'white',
+    backgroundColor: 'limegreen',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 5,
+    color: 'black',
   },
   buttonContainer: {
     width: '60%',
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   button: {
-    backgroundColor: '#0782F9',
+    backgroundColor: 'limegreen',
     width: '100%',
     padding: 15,
     borderRadius: 10,
@@ -95,17 +97,30 @@ const styles = StyleSheet.create({
   buttonOutline: {
     backgroundColor: 'white',
     marginTop: 5,
-    borderColor: '#0782F9',
+    borderColor: 'limegreen',
     borderWidth: 2,
   },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontWeight: '700',
     fontSize: 16,
   },
   buttonOutlineText: {
-    color: '#0782F9',
+    color: 'limegreen',
     fontWeight: '700',
     fontSize: 16,
   },
-})
+  header: {
+    backgroundColor: 'limegreen', // Set header background color to lime green
+    padding: 15,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    color: 'black', // Set header text color to black
+    fontWeight: '700',
+    fontSize: 18,
+  },
+});
+

@@ -84,7 +84,7 @@ export const FocusScreen = ({ navigation }) => {
     try {
       if (!sound) {
         const { sound: newSound } = await Audio.Sound.createAsync(
-            require('./../../../../assets/Phocus.m4a'),
+            require('./../../../../assets/HighGamma600640.wav'),
             { isLooping: true }
         );
         newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);

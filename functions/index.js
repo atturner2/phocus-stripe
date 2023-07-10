@@ -45,28 +45,12 @@ exports.handleFailedPayment = functions.https.onRequest(async (req, res) => {
   const stripeClient = new Stripe(stripeSecretKey.secret);
   const sig = req.headers["stripe-signature"];
 
-  /*
-  const secretValue = functions.config().failedsubscriptionpayment;
-  console.log("Hereis the request: ", req.body);
-  const buffer = Buffer.from(req.rawBody);
-  console.log("buffer: ", buffer);
-  console.log("req.body: ", req.body);
- // console.log("Here is the request.data: ", req.data);
-  try {
-    event = stripeClient.webhooks.constructEvent(buffer, sig, secretValue.secret);
-    //console.log("Here is the event: ", event);
-
-  } catch (err) {
-    console.log("error grabbing the event: ", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  } */
   const event = req.body;
 
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object;
     console.log("Here is the invoice: ", invoice)
     // Handle the failed payment (e.g. notify the user, update database, etc.)
-    console.log("Payment failed for invoice");
 
 //first we record the time of the failed payment
     const currentTime = Math.floor(Date.now() / 1000); // Current time in Unix timestamp (seconds)
@@ -75,23 +59,30 @@ exports.handleFailedPayment = functions.https.onRequest(async (req, res) => {
 //then we send the user an email saying their payment failed
     try {
       const stripeCustomerId = invoice.customer;
-      const userQuerySnapshot = await customersRef.where('stripeId', '==', "cus_O47npKPafC9tXj").get();
+      const userQuerySnapshot = await customersRef.where('stripeId', '==', "cus_OD7omQzCxDSzLZ").get();
       console.log("user query snapshot: ", userQuerySnapshot);
       const userDoc = userQuerySnapshot.docs[0];
       const userData = userDoc.data();
       console.log("Here is the user data! ", userData);
+      console.log("Here is the uid: ", userData.customerId)
+      //setIsActive to "paymentFailed"
+
       /*
       const userRecordRef = await admin.firestore().collection('customers').doc("cus_O47npKPafC9tXj");
       const userRecord = await userRecordRef.get();
       console.log("Here is the userrecordref: ", userRecordRef);
       console.log("Here is the userrecord: ", userRecord)
       */
+      await customersRef.where('stripeId', '==', userData.customerId).update({
+        isActive: "paymentFailed"
+      })
+
     } catch (error) {
       console.error("Error cancelling Subscription: ", error);
 
     }
-
 //then we set THE flag to have a warning flash in the app whenever they open it that they can't get rid
+    //we do this by setting the isActive to paymentFailed
 //of UNLESS they either update payment OR cancel their premium subscription
 // then we add their user to the database of failed subscriptions in Firebase and call the handler for that
 //then we write a function that goes through that database and cancels the subscriptions that aren't fixed. Note
@@ -125,8 +116,8 @@ exports.cancelPhocusPremium = functions.https.onCall(async (data, context) => {
    await stripeClient.subscriptions.del(stripeSubscriptionId);
 
    await userRecordRef.update({
-     isActive: false
-   })
+     isActive: "inActive"
+   });
 
  } catch (error) {
    console.error("Error cancelling Subscription: ", error);
