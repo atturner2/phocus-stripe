@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {StatusBar, StyleSheet, Button, SafeAreaView, Text, View, Alert} from "react-native";
+import {StatusBar, StyleSheet, Button, SafeAreaView, Text, View, Alert, TouchableOpacity} from "react-native";
 import { Audio } from 'expo-av';
 import {auth, db} from "../../../../firebase";
 import {doc, getDoc} from "firebase/firestore";
@@ -130,13 +130,18 @@ export const MeditateScreen = ({ navigation }) => {
   };
 
   return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={[styles.container, { backgroundColor: 'black' }]}>
+        <Text style={[styles.text, { color: 'limegreen' }]}>Welcome to the Meditate Screen.  Here you will hear Beta Frequencies to enable alertness and awareness for optimal meditation.</Text>
         {!isPlaying ? (
-            <Button title="Start Audio" onPress={handlePlayAudio} />
+            <TouchableOpacity style={styles.button} onPress={handlePlayAudio}>
+              <Text style={styles.buttonText}>Start Audio</Text>
+            </TouchableOpacity>
         ) : (
-            <Button title="Stop Audio" onPress={handleStopAudio} />
+            <TouchableOpacity style={styles.button} onPress={handleStopAudio}>
+              <Text style={styles.buttonText}>Stop Audio</Text>
+            </TouchableOpacity>
         )}
-        <Text>Play Count: {loopCount}</Text>
+        <Text style={styles.playCountText}>Play Count: {loopCount}</Text>
       </View>
   );
 };
@@ -145,14 +150,35 @@ export const MeditateScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: StatusBar.currentHeight,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  search: {
-    padding: 16,
+  button: {
+    backgroundColor: 'limegreen',
+    width: 200,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 20,
   },
-  list: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "blue",
+  buttonText: {
+    color: 'black',
+    fontWeight: '700',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  playCountText: {
+    color: 'limegreen',
+    fontSize: 18,
+    marginTop: 20,
+  },
+  Text: {
+    color: 'black',
+    fontSize: 18,
+    marginTop: 20,
+  },
+  text: {
+    textAlign: 'center',
   },
 });
+

@@ -1,67 +1,56 @@
-import { KeyboardAvoidingView, StyleSheet, TextInput, Button, Text, View } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, TextInput, TouchableOpacity, Text, View } from 'react-native';
 import React, { useState, useContext } from 'react';
 import { AuthenticationContext } from "../../../services/authentication.context";
-import { AuthButton } from "../component/login.component"
-import {LoadingComponent} from "../../Loading/loading-component";
+import { LoadingComponent } from "../../Loading/loading-component";
 
-export const LoginScreen = ( {navigation} ) => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const {  handleLogin, error, isLoading } = useContext(AuthenticationContext);
-
-
+export const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { handleLogin, error, isLoading } = useContext(AuthenticationContext);
 
   return (
-    <>
-    <KeyboardAvoidingView
-    style = {styles.container}
-    behavior = "padding"
-    >
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={text => setEmail(text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={text => setPassword(text)}
-          style={styles.input}
-          secureTextEntry
-        />
-      </View>
-      <View style={styles.buttonContainer}>
-        {!isLoading ? (
-          <>
-        <Button
-          title="Login"
-          onPress={() => handleLogin(email, password)}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </Button>
-        <Button
-        title="Create User"
-        onPress={() => navigation.navigate("CreateUser")}
-        style={styles.button}
-      >
-
-        <Text style={styles.buttonText}>Login</Text>
-      </Button>
-      </>
-        ): (
-            <LoadingComponent></LoadingComponent>
-        ) }
-
-      </View>
-    </KeyboardAvoidingView>
-    </>
-  )
-};
-
-
+      <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <View style={styles.centerContainer}>
+          <Text style={styles.centerText}>Phocus.</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={text => setEmail(text)}
+              style={styles.input}
+          />
+          <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={text => setPassword(text)}
+              style={styles.input}
+              secureTextEntry
+          />
+        </View>
+        <View style={styles.buttonContainer}>
+          {!isLoading ? (
+              <>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => handleLogin(email, password)}
+                >
+                  <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate("CreateUser")}
+                >
+                  <Text style={styles.buttonText}>Create User</Text>
+                </TouchableOpacity>
+              </>
+          ) : (
+              <LoadingComponent></LoadingComponent>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -71,7 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   inputContainer: {
-    width: '80%',
+    width: '80%'
   },
   input: {
     backgroundColor: 'limegreen',
@@ -93,34 +82,11 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-  },
-  buttonOutline: {
-    backgroundColor: 'white',
-    marginTop: 5,
-    borderColor: 'limegreen',
-    borderWidth: 2,
+    marginBottom: 10,
   },
   buttonText: {
     color: 'black',
     fontWeight: '700',
     fontSize: 16,
   },
-  buttonOutlineText: {
-    color: 'limegreen',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  header: {
-    backgroundColor: 'limegreen', // Set header background color to lime green
-    padding: 15,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: {
-    color: 'black', // Set header text color to black
-    fontWeight: '700',
-    fontSize: 18,
-  },
 });
-

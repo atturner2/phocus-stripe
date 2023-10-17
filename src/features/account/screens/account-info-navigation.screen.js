@@ -9,7 +9,6 @@ const AccountStack = createStackNavigator();
 export const AccountInfoScreens = () => (
   <AccountStack.Navigator screenOptions={{ headerShown: false }}>
     <AccountStack.Screen name="AccountStuff" component={AccountScreen}/>
-    <AccountStack.Screen name="AccountInfo" component={AccountInfoScreen}/>
     <AccountStack.Screen name="SubscriptionScreen" component={SubscriptionScreen}/>
   </AccountStack.Navigator>
 );

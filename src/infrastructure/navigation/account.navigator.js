@@ -8,7 +8,11 @@ import { AccountInfoScreen } from "../../features/account/screens/account-info.s
 const Stack = createStackNavigator();
 
 export const AccountNavigator = () => (
-  <Stack.Navigator>
+  <Stack.Navigator
+      screenOptions={{
+          headerShown: false, // Hide the main header for all screens
+      }}
+  >
     <Stack.Screen name="Login" component={LoginScreen}/>
     <Stack.Screen name="CreateUser" component={CreateUserScreen}/>
   </Stack.Navigator>

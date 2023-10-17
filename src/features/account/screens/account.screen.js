@@ -1,42 +1,42 @@
-import {  Button, Text, StyleSheet} from 'react-native';
+import React, { useContext } from "react";
+import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import { AuthenticationContext } from "../../../services/authentication.context";
-import {React, useContext} from "react";
-import { AccountInfoNavigator } from '../../../infrastructure/navigation/account-info.navigator';
-import { SubscriptionScreen } from '../../subscription/subscription-screen';
-export const AccountScreen = ( {navigation} ) => {
+import { AccountInfoNavigator } from "../../../infrastructure/navigation/account-info.navigator";
+import { SubscriptionScreen } from "../../subscription/subscription-screen";
+
+export const AccountScreen = ({ navigation }) => {
     const { handleLogout } = useContext(AuthenticationContext);
 
-    return(
-      <>
-
-    <Button
-  title="logout"
-  onPress={() => handleLogout()}
-  style={styles.button}
-  >
-  <Text style={styles.buttonText}>Logout</Text>
-  </Button>
-  <Button
-  title="account info"
-  onPress={() => navigation.navigate("AccountInfo")}
-  style={styles.button}
-  >
-  <Text style={styles.buttonText}>Logout</Text>
-  </Button>
-  <Button
-  title="subscription"
-  onPress={() => navigation.navigate("SubscriptionScreen")}
-  style={styles.button}
-  >
-  <Text style={styles.buttonText}>Logout</Text>
-  </Button>
-  </>
-  )
+    return (
+        <View style={styles.container}>
+            <TouchableOpacity onPress={() => handleLogout()} style={styles.button}>
+                <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("SubscriptionScreen")} style={styles.button}>
+                <Text style={styles.buttonText}>Subscription</Text>
+            </TouchableOpacity>
+        </View>
+    );
 };
+
 const styles = StyleSheet.create({
-    buttonText: {
-      color: 'white',
-      fontWeight: '700',
-      fontSize: 16,
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "black",
     },
-  });
+    button: {
+        backgroundColor: "limegreen",
+        width: "80%",
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 10,
+        alignItems: "center",
+    },
+    buttonText: {
+        color: "black",
+        fontWeight: "700",
+        fontSize: 16,
+    },
+});

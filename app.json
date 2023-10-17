@@ -4,7 +4,7 @@
     "slug": "phocus-stripe",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/phocusLogo.png",
     "userInterfaceStyle": "light",
     "scheme": "phocus",
     "splash": {
@@ -19,16 +19,23 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "phocus"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.atrain.phocusstripe"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "83ad8820-5e59-47a2-a1d2-15a0d3b57b87"
+      }
     }
   }
 }
